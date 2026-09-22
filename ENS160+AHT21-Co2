@@ -1,0 +1,57 @@
+esphome:
+  name: tester-powietrza-i-gleby
+  friendly_name: tester_powietrza_i_gleby
+
+esp32:
+  board: esp32dev
+  framework:
+    type: arduino
+
+wifi:
+  ssid: "***"
+  password: "***"
+  ap:
+    ssid: "***"
+    password: ***
+
+captive_portal:
+
+logger:
+  level: DEBUG
+
+api:
+  encryption:
+    key: "***"
+
+ota:
+  - platform: esphome
+
+
+ 
+sensor:
+  # Czujnik wilgotności gleby (analogowy)
+  - platform: adc
+    pin: GPIO34
+    name: "Wilgotność gleby"
+    update_interval: 60s
+    attenuation: 11db
+    filters:
+      - calibrate_linear:
+          - 2.85 -> 0.0
+          - 1.35 -> 100.0
+      - lambda: |-
+          if (x < 0) return 0;
+          if (x > 100) return 100;
+          return x;
+    unit_of_measurement: "%"
+    accuracy_decimals: 0
+
+  # Czujnik temperatury i wilgotności otoczenia (DHT22)
+  - platform: dht
+    pin: GPIO4
+    model: DHT22
+    temperature:
+      name: "Tester Powietrza Temperatura"
+    humidity:
+      name: "Tester Powietrza Wilgotność"
+    update_interval: 60s
