@@ -1,0 +1,69 @@
+# Board: Generic ESP32 Board (Generic)
+# Definition: definitions/boards/generic-esp32/manifest.yaml
+
+esphome:
+  name: kamera-mini-1
+  friendly_name: Kamera mini 1
+
+esp32:
+  board: esp32cam
+  framework:
+    type: arduino
+
+wifi:
+  ssid: "***"
+  password: "*****"
+
+  ap:
+    ssid: "*****"
+    password: "****"
+
+captive_portal:
+
+logger:
+  level: INFO
+
+api:
+  encryption:
+    key: *******
+
+ota:
+  - platform: esphome
+    password: "***"
+
+# Wymagane dla obsługi PSRAM w ESP32-CAM
+psram:
+  mode: quad
+  speed: 40MHz
+
+# Konfiguracja kamery OV2640 na ESP32-CAM (zoptymalizowany płynny strumień)
+esp32_camera:
+  name: "Kamera Obraz"
+  id: esp32_cam_sensor
+  external_clock:
+    pin: GPIO0
+    frequency: 20MHz
+  i2c_pins:
+    sda: GPIO26
+    scl: GPIO27
+  data_pins: [GPIO5, GPIO18, GPIO19, GPIO21, GPIO36, GPIO39, GPIO34, GPIO35]
+  vsync_pin: GPIO25
+  href_pin: GPIO23
+  pixel_clock_pin: GPIO22
+  power_down_pin: GPIO32
+  
+  # Parametry strumienia zapewniające płynność
+  max_framerate: 25 fps
+  resolution: VGA
+  jpeg_quality: 12
+
+# Opcjonalna obsługa wbudowanej diody LED (jako latarka / doświetlenie)
+light:
+  - platform: binary
+    output: led_flash
+    name: "Kamera Flash LED"
+
+output:
+  - platform: gpio
+    pin: GPIO4
+    id: led_flash
