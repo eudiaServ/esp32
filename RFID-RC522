@@ -1,0 +1,51 @@
+# Board: Generic ESP32 Board (Generic)
+# Definition: definitions/boards/generic-esp32/manifest.yaml
+
+esphome:
+  name: czytnik-rfid
+  friendly_name: czytnik RFID
+
+esp32:
+  board: esp32dev
+  framework:
+    type: arduino
+
+wifi:
+  ssid: "***"
+  password: "****"
+  manual_ip:
+    static_ip:   # Upewnij się, że to wolny adres w podsieci Beataserwera
+    gateway: 
+    subnet: 
+
+  ap:
+    ssid: "***"
+    password: "****
+
+captive_portal:
+
+# Ustawienie poziomu logów na WARN eliminuje spam w konsoli
+logger:
+  level: WARN
+
+api:
+  encryption:
+    key: ***
+ota:
+  - platform: esphome
+    password: "****"
+
+# Konfiguracja magistrali SPI dla czytnika MFRC522
+spi:
+  clk_pin: GPIO18
+  mosi_pin: GPIO23
+  miso_pin: GPIO19
+
+# Konfiguracja czytnika RFID MFRC522 z poprawną obsługą zdarzeń tagów
+rc522_spi:
+  cs_pin: GPIO21
+  reset_pin: GPIO22
+  update_interval: 1s
+  on_tag:
+    then:
+      - homeassistant.tag_scanned: !lambda "return x;"
