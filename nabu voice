@@ -111,7 +111,7 @@ api:
 
 ota:
   - platform: esphome
-    id: ota_esphome
+    id: ****
 
 i2c:
   - id: internal_i2c
