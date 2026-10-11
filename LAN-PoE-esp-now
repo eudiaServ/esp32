@@ -1,15 +1,19 @@
 # Board: Waveshare ESP32-P4-ETH
 esphome:
   name: bramka-lan-dla-esp
-  friendly_name: Bramka LAN dla esp
+  friendly_name: "Bramka LAN dla esp"
+  on_boot:
+    priority: 600
+    then:
+      - lambda: |-
+          ESP_LOGI("esp_now", "Inicjalizacja bramki LAN i ESP-NOW...");
 
 esp32:
-  board: esp32-p4-evboard
+  board: esp32p4-evboard
   variant: esp32p4
   framework:
     type: esp-idf
 
-# Konfiguracja sieci LAN (Ethernet) z uwzględnieniem specyfikacji Waveshare ESP32-P4-ETH
 ethernet:
   type: IP101
   mdc_pin: GPIO31
@@ -31,8 +35,38 @@ api:
 ota:
   - platform: esphome
 
-# Miejsce na zdefiniowanie czujników, które odbiorą dane z magistrali lub sieci
-# i przekażą je bezpośrednio do Home Assistant przez sieć LAN:
 sensor:
   - platform: uptime
     name: "Uptime Odbiornika LAN"
+
+  # Sensory wirtualne odbierające dane przez ESP-NOW z czujnika pokoju
+  - platform: template
+    name: "Pokój - eCO2"
+    id: pokoj_eco2
+    unit_of_measurement: "ppm"
+  - platform: template
+    name: "Pokój - TVOC"
+    id: pokoj_tvoc
+    unit_of_measurement: "ppb"
+  - platform: template
+    name: "Pokój - AQI"
+    id: pokoj_aqi
+  - platform: template
+    name: "Pokój - Odległość ruchu"
+    id: pokoj_moving_distance
+    unit_of_measurement: "cm"
+  - platform: template
+    name: "Pokój - Odległość statyczna"
+    id: pokoj_still_distance
+    unit_of_measurement: "cm"
+
+binary_sensor:
+  - platform: template
+    name: "Pokój - Obecność"
+    id: pokoj_obecnosc
+  - platform: template
+    name: "Pokój - Ruch"
+    id: pokoj_ruch
+  - platform: template
+    name: "Pokój - Obiekt statyczny"
+    id: pokoj_statyczny
