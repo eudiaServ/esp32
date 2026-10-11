@@ -1,0 +1,38 @@
+# Board: Waveshare ESP32-P4-ETH
+esphome:
+  name: bramka-lan-dla-esp
+  friendly_name: Bramka LAN dla esp
+
+esp32:
+  board: esp32-p4-evboard
+  variant: esp32p4
+  framework:
+    type: esp-idf
+
+# Konfiguracja sieci LAN (Ethernet) z uwzględnieniem specyfikacji Waveshare ESP32-P4-ETH
+ethernet:
+  type: IP101
+  mdc_pin: GPIO31
+  mdio_pin: GPIO52
+  power_pin: GPIO51
+  clk:
+    pin: GPIO50
+    mode: CLK_EXT_IN
+  phy_addr: 1
+
+logger:
+  level: DEBUG
+  baud_rate: 0
+
+api:
+  encryption:
+    key: "/zygetv08Hq5E6rMMIUSvhvODZbmnDtrvAbWIIIEXdM="
+
+ota:
+  - platform: esphome
+
+# Miejsce na zdefiniowanie czujników, które odbiorą dane z magistrali lub sieci
+# i przekażą je bezpośrednio do Home Assistant przez sieć LAN:
+sensor:
+  - platform: uptime
+    name: "Uptime Odbiornika LAN"
