@@ -1,0 +1,225 @@
+# Board: Generic ESP32 Board (Generic)
+# Definition: definitions/boards/generic-esp32/manifest.yaml
+
+esphome:
+  name: czujnik-pokoju
+  friendly_name: "Czujnik Pokoju - Obecnosc"
+
+esp32:
+  board: esp32dev
+  framework:
+    type: esp-idf
+
+wifi:
+  ssid: "Leonardo da WiFi"
+  password: "2.Brzeczyszczykiewicz"
+
+  ap:
+    ssid: "MartinRouterKing"
+    password: "thoshi3T2!"
+
+captive_portal:
+
+logger:
+  level: DEBUG
+
+api:
+  encryption:
+    key: "w/fjeh83jcFZstHOpuylwHDZjC25XzLoXIzrelx2280="
+
+ota:
+  - platform: esphome
+    password: "zaqwajota3T2"
+
+esp32_ble_tracker:
+  scan_parameters:
+    active: false
+    interval: 320ms
+    window: 30ms
+    duration: 5min
+
+# Włączenie natywnego protokołu ESP-NOW w ESPHome
+espnow:
+  enable_on_boot: true
+
+uart:
+  - id: uart_ld2410
+    tx_pin: GPIO17
+    rx_pin: GPIO16
+    baud_rate: 256000
+
+  - id: uart_co2
+    tx_pin: GPIO19
+    rx_pin:
+      number: GPIO18
+      mode:
+        input: true
+        pullup: true
+    baud_rate: 9600
+    debug:
+      direction: RX
+      dummy_receiver: true
+      after:
+        timeout: 50ms
+      sequence:
+        - lambda: |-
+            if (bytes.size() == 16 && bytes[0] == 0x42 && bytes[1] == 0x4D) {
+              uint16_t sum = 0;
+              for (int i = 0; i < 14; i++) sum += bytes[i];
+              uint16_t checksum = (uint16_t(bytes[14]) << 8) | bytes[15];
+              if (sum == checksum) {
+                uint16_t co2 = (uint16_t(bytes[6]) << 8) | bytes[7];
+                if (co2 >= 350 && co2 <= 10000) {
+                  id(poziom_co2).publish_state(co2);
+                }
+              }
+            }
+
+ld2410:
+  id: ld2410_component
+  uart_id: uart_ld2410
+
+binary_sensor:
+  - platform: ld2410
+    ld2410_id: ld2410_component
+    has_target:
+      name: "Obecnosc w pokoju"
+      id: pokoj_obecnosc
+      on_press:
+        then:
+          - lambda: |-
+              uint8_t data = 1;
+              uint8_t target_mac[6] = {0x40, 0x22, 0xD8, 0x15, 0xC6, 0x84};
+              espnow::global_esp_now->send(target_mac, &data, 1);
+      on_release:
+        then:
+          - lambda: |-
+              uint8_t data = 0;
+              uint8_t target_mac[6] = {0x40, 0x22, 0xD8, 0x15, 0xC6, 0x84};
+              espnow::global_esp_now->send(target_mac, &data, 1);
+    has_moving_target:
+      name: "Wykryto ruch"
+    has_still_target:
+      name: "Wykryto obiekt statyczny"
+
+sensor:
+  - platform: template
+    name: "Poziom CO2"
+    id: poziom_co2
+    unit_of_measurement: "ppm"
+    device_class: "carbon_dioxide"
+    state_class: "measurement"
+    accuracy_decimals: 0
+    icon: "mdi:molecule-co2"
+    update_interval: never
+    filters:
+      - throttle_average: 15s
+
+  - platform: ld2410
+    ld2410_id: ld2410_component
+    moving_distance:
+      name: "Aktualna odległość ruchu"
+      id: pokoj_moving_distance
+    still_distance:
+      name: "Aktualna odległość obiektu statycznego"
+      id: pokoj_still_distance
+    moving_energy:
+      name: "Energia ruchu"
+    still_energy:
+      name: "Energia obiektu statycznego"
+    detection_distance:
+      name: "Całkowita odległość wykrywania"
+    g0:
+      move_energy:
+        name: "g0 move energy"
+      still_energy:
+        name: "g0 still energy"
+    g1:
+      move_energy:
+        name: "g1 move energy"
+      still_energy:
+        name: "g1 still energy"
+    g2:
+      move_energy:
+        name: "g2 move energy"
+      still_energy:
+        name: "g2 still energy"
+    g3:
+      move_energy:
+        name: "g3 move energy"
+      still_energy:
+        name: "g3 still energy"
+    g4:
+      move_energy:
+        name: "g4 move energy"
+      still_energy:
+        name: "g4 still energy"
+    g5:
+      move_energy:
+        name: "g5 move energy"
+      still_energy:
+        name: "g5 still energy"
+    g6:
+      move_energy:
+        name: "g6 move energy"
+      still_energy:
+        name: "g6 still energy"
+    g7:
+      move_energy:
+        name: "g7 move energy"
+      still_energy:
+        name: "g7 still energy"
+    g8:
+      move_energy:
+        name: "g8 move energy"
+      still_energy:
+        name: "g8 still energy"
+
+# number:
+#   - platform: ld2410
+#     ld2410_id: ld2410_component
+#     timeout:
+#       name: "Timeout"
+#     max_move_distance_gate:
+#       name: "Max Move Distance Gate"
+#     max_still_distance_gate:
+#       name: "Max Still Distance Gate"
+#     g0:
+#       move_threshold:
+#         name: "g0 move threshold"
+#       still_threshold:
+#         name: "g0 still threshold"
+#     g1:
+#       move_threshold:
+#         name: "g1 move threshold"
+#       still_threshold:
+#         name: "g1 still threshold"
+#     g2:
+#       move_threshold:
+#         name: "g2 move threshold"
+#       still_threshold:
+#         name: "g2 still threshold"
+#     g3:
+#       move_threshold:
+#         name: "g3 move threshold"
+#       still_threshold:
+#         name: "g3 still threshold"
+#     g4:
+#       move_threshold:
+#         name: "g4 move threshold"
+#       still_threshold:
+#         name: "g4 still threshold"
+#     g5:
+#       move_threshold:
+#         name: "g5 move threshold"
+#       still_threshold:
+#         name: "g5 still threshold"
+#     g6:
+#       move_threshold:
+#         name: "g6 move threshold"
+#       still_threshold:
+#         name: "g6 still threshold"
+#     g7:
+#       move_threshold:
+#         name: "g7 move threshold"
+#       still
