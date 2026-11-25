@@ -63,18 +63,12 @@ uart:
         timeout: 50ms
       sequence:
         - lambda: |-
-            if (bytes.size() == 16 && bytes[0] == 0x42 && bytes[1] == 0x4D) {
-              uint16_t sum = 0;
-              for (int i = 0; i < 14; i++) sum += bytes[i];
-              uint16_t checksum = (uint16_t(bytes[14]) << 8) | bytes[15];
-              if (sum == checksum) {
-                uint16_t co2 = (uint16_t(bytes[6]) << 8) | bytes[7];
-                if (co2 >= 350 && co2 <= 10000) {
-                  id(poziom_co2).publish_state(co2);
-                }
+            if (bytes.size() >= 10 && bytes[0] == 0x42 && bytes[1] == 0x4D) {
+              uint16_t co2 = (uint16_t(bytes[6]) << 8) | bytes[7];
+              if (co2 >= 350 && co2 <= 10000) {
+                id(poziom_co2).publish_state(co2);
               }
             }
-
 ld2410:
   id: ld2410_component
   uart_id: uart_ld2410
